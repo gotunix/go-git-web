@@ -182,6 +182,7 @@ func main() {
 	}
 
 	http.HandleFunc("/__versions__", versionHandler)
+	http.HandleFunc("/__version__", versionHandler)
 	http.HandleFunc("/", handler)
 
 	port := "8080"
