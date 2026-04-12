@@ -4,7 +4,9 @@ services:
   git-web:
     build: .
     container_name: go-git-web
-    user: "1000:1000" # Runs the container as UID 1000 and GID 1000
+    environment:
+      - PUID=1000
+      - PGID=1000
     ports:
       - "8080:8080"
     volumes:
