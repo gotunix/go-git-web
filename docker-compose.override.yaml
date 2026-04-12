@@ -6,11 +6,11 @@ services:
     environment:
       - PUID=2500
       - PGID=2500
-      
+
     # EXAMPLE: Change the host port mapping so that you can access it on port 80 instead of 8080 natively
     ports:
       - "80:8080"
-      
+
     # EXAMPLE: Uncommenting this forces Docker to mount your local config file directly into the app,
     # overwriting the one seamlessly baked into the Alpine image for quick testing
     volumes:

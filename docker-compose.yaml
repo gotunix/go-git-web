@@ -12,7 +12,7 @@ services:
     volumes:
       # Optional Override: Uncomment the line below to dynamically mount a custom config.yaml over the one baked into the image
       # - ./config.yaml:/app/config.yaml
-      
+
       # Mount the named NFS volume into the container where the app expects 'repos'
       - nfs-repos:/app/repos
     restart: always

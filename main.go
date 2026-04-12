@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"strings"
+	"time"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -176,6 +177,46 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type responseRecorder struct {
+	http.ResponseWriter
+	statusCode int
+	size       int
+}
+
+func (rw *responseRecorder) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+
+func (rw *responseRecorder) Write(b []byte) (int, error) {
+	size, err := rw.ResponseWriter.Write(b)
+	rw.size += size
+	return size, err
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		recorder := &responseRecorder{
+			ResponseWriter: w,
+			statusCode:     http.StatusOK, // Default to 200
+		}
+
+		next.ServeHTTP(recorder, r)
+
+		log.Printf("%s - \"%s %s %s\" %d %d %v",
+			r.RemoteAddr,
+			r.Method,
+			r.RequestURI,
+			r.Proto,
+			recorder.statusCode,
+			recorder.size,
+			time.Since(start),
+		)
+	})
+}
+
 func main() {
 	if err := loadConfig("config.yaml"); err != nil {
 		log.Fatalf("Failed to load config.yaml: %v", err)
@@ -187,7 +228,7 @@ func main() {
 
 	port := "8080"
 	log.Printf("Starting Git-backed Web Server on :%s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := http.ListenAndServe(":"+port, loggingMiddleware(http.DefaultServeMux)); err != nil {
 		log.Fatal(err)
 	}
 }
