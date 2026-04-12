@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  git-web:
+    build: .
+    container_name: go-git-web
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount the local configuration file directly
+      - ./config.yaml:/app/config.yaml
+      
+      # Mount the named NFS volume into the container where the app expects 'repos'
+      - nfs-repos:/app/repos
+    restart: always
+
+volumes:
+  nfs-repos:
+    driver: local
+    driver_opts:
+      type: nfs
+      # Replace '10.0.0.100' with your actual NFS server's IP address
+      o: addr=10.0.0.100,rw,nfsvers=3
+      # Replace ':/path/to/nfs/share' with the configured export path on your NFS server
+      device: ":/path/to/nfs/share"
