@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  git-web:
+    # EXAMPLE: Override the user ID and group ID variables to match a different host user
+    environment:
+      - PUID=2500
+      - PGID=2500
+      
+    # EXAMPLE: Change the host port mapping so that you can access it on port 80 instead of 8080 natively
+    ports:
+      - "80:8080"
+      
+    # EXAMPLE: Uncommenting this forces Docker to mount your local config file directly into the app,
+    # overwriting the one seamlessly baked into the Alpine image for quick testing
+    volumes:
+      - ./config.yaml:/app/config.yaml
+
+# EXAMPLE: Override the global Network File System (NFS) properties natively. 
+# This tells Docker to merge this specific configuration against the base deployment, allowing you 
+# to route this container instantly to different isolated NAS servers per-machine without altering the base deployment code.
+volumes:
+  nfs-repos:
+    driver: local
+    driver_opts:
+      type: nfs
+      # IP format -> Change this to specifically target your machine's local NFS server deployment 
+      o: addr=192.168.1.50,rw,nfsvers=3
+      # Host folder -> Change this to mirror your exact NFS path
+      device: ":/volume1/git_share"
