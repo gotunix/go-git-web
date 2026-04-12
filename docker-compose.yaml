@@ -4,11 +4,12 @@ services:
   git-web:
     build: .
     container_name: go-git-web
+    user: "1000:1000" # Runs the container as UID 1000 and GID 1000
     ports:
       - "8080:8080"
     volumes:
-      # Mount the local configuration file directly
-      - ./config.yaml:/app/config.yaml
+      # Optional Override: Uncomment the line below to dynamically mount a custom config.yaml over the one baked into the image
+      # - ./config.yaml:/app/config.yaml
       
       # Mount the named NFS volume into the container where the app expects 'repos'
       - nfs-repos:/app/repos
