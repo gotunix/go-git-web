@@ -1,0 +1,8 @@
+sites:
+  - host: "site-a.local"
+    repo_path: "./repos/siteA.git"
+  - host: "dev.site-a.local"
+    repo_path: "./repos/siteA.git"
+    branch: "dev"
+  - host: "site-b.local"
+    repo_path: "./repos/siteB.git"
