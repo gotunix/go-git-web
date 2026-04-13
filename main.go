@@ -205,9 +205,15 @@ func loggingMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(recorder, r)
 
-		log.Printf("[%s] %s - \"%s %s %s\" %d %d %v",
+		xfwd := r.Header.Get("X-Forwarded-For")
+		if xfwd == "" {
+			xfwd = "-"
+		}
+
+		log.Printf("[%s] %s (X-Forwarded-For: %s) - \"%s %s %s\" %d %d %v",
 			r.Host,
 			r.RemoteAddr,
+			xfwd,
 			r.Method,
 			r.RequestURI,
 			r.Proto,
