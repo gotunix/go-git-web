@@ -18,18 +18,25 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Site represents a single domain mapping configuration
 type Site struct {
+	// Host is the HTTP Host header to match (e.g., "site-a.local")
 	Host     string `yaml:"host"`
+	// RepoPath is the local filesystem path to the bare git repository target
 	RepoPath string `yaml:"repo_path"`
+	// Branch is the optional override defining which branch to extract content from
 	Branch   string `yaml:"branch"`
 }
 
+// Config wraps the top-level YAML configuration file structure
 type Config struct {
 	Sites []Site `yaml:"sites"`
 }
 
+// routeMap stores our globally parsed Host -> Site routing table in memory
 var routeMap = make(map[string]Site)
 
+// loadConfig reads the YAML configuration file and populates the global routeMap object
 func loadConfig(path string) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -49,6 +56,7 @@ func loadConfig(path string) error {
 	return nil
 }
 
+// versionHandler intercepts the /__versions__ URL to dynamically extract compiled Go dependency variables
 func versionHandler(w http.ResponseWriter, r *http.Request) {
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
@@ -70,6 +78,7 @@ func versionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// handler is the primary multiplexer router that interfaces directly with bare Git repositories dynamically
 func handler(w http.ResponseWriter, r *http.Request) {
 	// Extract the host. Ensure standard behavior matches.
 	host := r.Host
@@ -177,23 +186,27 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// responseRecorder wraps the standard http.ResponseWriter to silently log HTTP status codes and transmitted capacities
 type responseRecorder struct {
 	http.ResponseWriter
 	statusCode int
 	size       int
 }
 
+// WriteHeader hooks the status code directly into the local recorder before passing it back natively
 func (rw *responseRecorder) WriteHeader(code int) {
 	rw.statusCode = code
 	rw.ResponseWriter.WriteHeader(code)
 }
 
+// Write intercepts the payload transaction stream to dynamically track how many bytes are rendered out
 func (rw *responseRecorder) Write(b []byte) (int, error) {
 	size, err := rw.ResponseWriter.Write(b)
 	rw.size += size
 	return size, err
 }
 
+// loggingMiddleware proxy wraps incoming HTTP requests natively injecting Apache-styled execution logs straight to Stdout
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -224,6 +237,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// main bootstraps the server architecture natively
 func main() {
 	if err := loadConfig("config.yaml"); err != nil {
 		log.Fatalf("Failed to load config.yaml: %v", err)
