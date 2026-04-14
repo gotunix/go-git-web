@@ -3,8 +3,8 @@ FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
-# Copy source and dependency listing
-COPY go.mod main.go ./
+# Go source files now live under src/ for clean project structure
+COPY src/go.mod src/main.go ./
 
 # Download all dependencies dynamically
 RUN go mod tidy
